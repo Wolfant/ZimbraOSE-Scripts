@@ -1,12 +1,12 @@
 #!/bin/bash
 # 
-# Z6_DeleteCloseUsers.sh: script para borrar usuarios en estado
-#					 Closed de Zimbra 6
+# Zx_CreateUsers.sh: script para crear usuarios en estado
+#					 
 #		  
 #		Uso: 
-#		Bz6Closed_user.sh Dominio 
-#		Dominio: Dominio de los suarios a borrar <usuario@domionio>
-#		
+#		Zx_CreateUsers.sh UserList 
+#		UserList: Archivos con la lista de usuarios en formato:
+#		Nombre:Apellido:mail:password
 # 
 #
 # Copyrigth Antonio Insuasti - <antonio@insuasti.ec>
@@ -27,33 +27,23 @@
 # Author: Antonio Insuasti <antonio@insuasti.ec>
 #
 
+UserList=$1
 
-
-
-function usage {
-   echo "$0 : You must specify Domain name "
-   echo "Try  $0 Dominio  "
-   echo "Ex. $0 example.ec "
-}
-
-
-domain=$1
-
-
-# Validacion de parametros
-
-if [ -z $domain ] ; then
+if [ ! -r ${UserList} ] ; then
   usage
   exit;
 fi
 
+while read UserLine; 
+ do
+	user_Fname=$(echo "$UserLine" | cut -d: -f1)
+	user_Lname=$(echo "$UserLine" | cut -d: -f2 )
+	mail=$( echo "$UserLine" | cut -d: -f3 )
+	password=$( echo "$UserLine" | cut -d: -f4 )
+	
+	echo "Se crea al usuario: $mail"
+	zmprov ca $mail $passwordvenName displayName "$user_Fname $user_Lname" givenName "$user_Fname" cn "$user_Fname $user_Lname" 
+    echo "user created"
+	echo "-------------------"
+done < ${UserList}
 
-
-echo "dominio a usar: $domain "
-
-for zuser in $( zmaccts | grep closed | awk {'print $1'} | cut -d@ -f1  ) ;
-do
-   echo "Se elimina el usuario: ${zuser}@${domain} "
-   zmprov da ${zuser}@${domain} 
-
-done
